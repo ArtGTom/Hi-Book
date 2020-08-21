@@ -4,9 +4,9 @@ module.exports = {
     client: 'pg',
     connection: {
         host: 'localhost',
-        port: '4444',
+        port: '5432',
         user: 'postgres',
-        password: 'hibook3',
+        password: 'joaobanco',
         database: 'db_hibook'
     },
     migrations: {
