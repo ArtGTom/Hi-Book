@@ -14,7 +14,6 @@ export async function GenerateToken(idUser: number): Promise<any> {
     return promise;
 }
 
-
 export function verifyToken(request: Request, response: Response, next: NextFunction) {
     const token = request.headers['x-access-token'];
     if(!token)
@@ -31,25 +30,17 @@ export function verifyToken(request: Request, response: Response, next: NextFunc
 
 export async function getUserByToken(request: Request) {
     const promise = new Promise(async (resolve, reject) => {
+        
         const token = request.headers['x-access-token'];
         let decoded: any = jwt.decode(token as string);
         
         let user = await db('tb_user')
-                    .select('tb_user.cd_user', 'tb_user.nm_user', 'tb_user.nm_username', 
-                        'tb_user.cd_user_icon_URL', 'tb_user.ds_biography', 'tb_user')
+                    .select('tb_user.cd_user', 'tb_user.nm_user', 'tb_user.nm_username', 'tb_user.nm_email_user',
+                        'tb_user.cd_user_icon_URL', 'tb_user.ds_biography', 'tb_user.cd_phone_number')
                     .where('tb_user.cd_user', '=', decoded.idUser);
-
-        if(user) {
-            let userResponse = {
-                id: user[0].id,
-                user: user[0].nm_user,
-                username: user[0].nm_username,
-                image: user[0].cd_user_icon_URL,
-                biography: user[0].ds_biography
-            }
-
-            resolve(userResponse);
-        }
+        
+        if(user)
+            resolve(user[0]);
         else
             reject({message: 'Houve um problema de autenticação. Renove seu token.'});
     });

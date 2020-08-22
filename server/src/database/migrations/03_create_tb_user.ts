@@ -8,7 +8,7 @@ export async function up(knex: Knex) {
         table.string('nm_email_user').notNullable();
         table.text('cd_password_hash').notNullable();
         table.string('ds_biography').notNullable();
-        table.integer('cd_phone_number');
+        table.string('cd_phone_number');
         table.text('cd_user_icon_URL'); 
         
         table.integer('cd_geolocation');

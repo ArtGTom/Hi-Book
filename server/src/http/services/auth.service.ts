@@ -1,10 +1,10 @@
 import db from './../../database/connection';
 import {GenerateToken} from './../../utils/JWTAuthentication';
 import bcrypt from 'bcrypt';
-import { RegisterUser} from './../../models/User.model';
+import { CreateUser } from './../../models/user.model';
 
 
-export async function Register(user: RegisterUser) {
+export async function Register(user: CreateUser) {
 
     const promise = new Promise( async (resolve, reject) => {
         const userExists = await db('tb_user').select('*')
@@ -30,10 +30,10 @@ export async function Register(user: RegisterUser) {
 
             const ids = await db('tb_user').select('tb_user.cd_user')
                             .where('tb_user.nm_username', '=', user.username);
-            
+
             resolve ({
                 message: 'Cadastro efetuado com sucesso',
-                token: await GenerateToken(ids[0])
+                token: await GenerateToken(ids[0].cd_user)
             });
         } else 
             reject({message: 'Login e/ou email não disponíveis!'});
@@ -48,9 +48,10 @@ export async function Login(credentials: {login: string, password: string}) {
     
     const promise = new Promise( async (resolve, reject) => {
 
-        const user = await db('tb_user').select('tb_user.cd_user','tb_user.nm_username', 'tb_user.cd_password_hash')
-                .where('tb_user.nm_username', '=', credentials.login);
-
+        const user = await db('tb_user').select('tb_user.cd_user','tb_user.nm_username', 'tb_user.nm_email_user', 'tb_user.cd_password_hash')
+                .where('tb_user.nm_username', '=', credentials.login)
+                .orWhere('tb_user.nm_email_user','=',credentials.login);
+        console.log(user[0]);
         // Verifica se a busca no banco de dados nao retornou nulo
         if(user[0]) {
             var passwordIsValid: boolean = false;
@@ -59,12 +60,13 @@ export async function Login(credentials: {login: string, password: string}) {
                 .then(same => passwordIsValid = same)
                 .catch(e => {reject({message: 'Erro inesperado ao efetuar login. Tente mais tarde.'}); 
                             console.error(e)});
-
+            
             // Verifica se o login e a senha estão corretos
-            if(user[0].nm_username == credentials.login && passwordIsValid) {
+            if((user[0].nm_username == credentials.login || user[0].nm_email_user) && passwordIsValid) {
                 let token = await GenerateToken(user[0].cd_user);
                 resolve({token});
             } else {
+                console.log('esse');
                 reject({message: 'Credenciais inválidas!'});
             }
         } else {
